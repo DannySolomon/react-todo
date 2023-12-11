@@ -1,15 +1,22 @@
-import { getTodos } from "../api";
+import { addTodos, getTodos } from "../api";
 import TaskList from "./TaskList";
 import React, { useEffect, useState } from "react";
 
 function App() {
   const [tasks, setTasks] = useState([]);
+  const [taskTitle, setTaskTitle] = useState("");
+
+  //need to reverse array so that the higher ids will come first , so during edit(markascomplete), when sorted, the newly added ones by us wont go to the bottom
 
   useEffect(() => {
     const fetchTodos = async () => {
       const response = await getTodos();
       if (response.status === 200) {
         const data = await response.json();
+
+        //adding editMode to enable edit Title feature for all Todos
+        data.map((todo) => (todo["editMode"] = false));
+
         setTasks(data);
       } else {
         console.log("Error in fetching TODOs from API");
@@ -18,6 +25,31 @@ function App() {
 
     fetchTodos();
   }, []);
+
+  const addTask = async (e) => {
+    e.preventDefault();
+    const date = new Date();
+    const task = {
+      userId: 1,
+      id: date.valueOf(),
+      title: taskTitle,
+      completed: false,
+    };
+    const response = await addTodos(task);
+    if (response.status === 201) {
+      //adding editMode
+      let newTask = task;
+      newTask["editMode"] = false;
+
+      const newTasks = tasks;
+      newTasks.unshift(newTask); //adding the task to the top of the list
+
+      setTasks(newTasks);
+    } else {
+      console.log("Error in adding TODO to API");
+    }
+    setTaskTitle("");
+  };
 
   const editTask = (task) => {
     console.log("In edit task", task);
@@ -29,24 +61,37 @@ function App() {
     setTasks(newTasks);
   };
 
+  const deleteTask = (task) => {
+    console.log("In delete task", task);
+    let newTasks = tasks.filter((todo) => todo.id !== task.id);
+    setTasks(newTasks);
+  };
+
   return (
     <div className="App">
       <h1>To Do List</h1>
       <div id="container">
-        <form>
+        <form onSubmit={addTask}>
           <input
             type="text"
             className="taskInput"
             placeholder="Enter task"
             required
+            value={taskTitle}
+            onChange={(e) => setTaskTitle(e.target.value)}
           />
           <button type="submit">Add Task</button>
         </form>
         <div id="total-tasks">
-          Total tasks: <span id="task-counter">0</span>
+          Total tasks: <span id="task-counter">{tasks.length}</span>
         </div>
         {tasks.map((task) => (
-          <TaskList task={task} key={task.id} editTask={editTask} />
+          <TaskList
+            task={task}
+            key={task.id}
+            editTask={editTask}
+            deleteTask={deleteTask}
+          />
         ))}
       </div>
     </div>
