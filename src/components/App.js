@@ -13,10 +13,6 @@ function App() {
       const response = await getTodos();
       if (response.status === 200) {
         const data = await response.json();
-
-        //adding editMode to enable edit Title feature for all Todos
-        data.map((todo) => (todo["editMode"] = false));
-
         setTasks(data);
       } else {
         console.log("Error in fetching TODOs from API");
@@ -37,12 +33,8 @@ function App() {
     };
     const response = await addTodos(task);
     if (response.status === 201) {
-      //adding editMode
-      let newTask = task;
-      newTask["editMode"] = false;
-
       const newTasks = tasks;
-      newTasks.unshift(newTask); //adding the task to the top of the list
+      newTasks.unshift(task); //adding the task to the top of the list
 
       setTasks(newTasks);
     } else {
@@ -85,7 +77,7 @@ function App() {
         <div id="total-tasks">
           Total tasks: <span id="task-counter">{tasks.length}</span>
         </div>
-        {tasks.map((task) => (
+        {tasks?.map((task) => (
           <TaskList
             task={task}
             key={task.id}
