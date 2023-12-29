@@ -1,6 +1,11 @@
 import { addTodos, getTodos } from "../api";
 import TaskList from "./TaskList";
 import React, { useEffect, useState } from "react";
+import "bootstrap/dist/css/bootstrap.css"; //only if you do this react bootstrap will work
+import ListGroup from "react-bootstrap/ListGroup";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import { toast } from "react-toastify";
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -35,9 +40,10 @@ function App() {
     if (response.status === 201) {
       const newTasks = tasks;
       newTasks.unshift(task); //adding the task to the top of the list
-
       setTasks(newTasks);
+      toast.success("Successfully added new Task");
     } else {
+      toast.error("Error in adding TODO to API");
       console.log("Error in adding TODO to API");
     }
     setTaskTitle("");
@@ -61,30 +67,39 @@ function App() {
 
   return (
     <div className="App">
-      <h1>To Do List</h1>
+      <h1 className="heading" style={{ textAlign: "center" }}>
+        To Do List
+      </h1>
       <div id="container">
-        <form onSubmit={addTask}>
-          <input
-            type="text"
-            className="taskInput"
-            placeholder="Enter task"
-            required
-            value={taskTitle}
-            onChange={(e) => setTaskTitle(e.target.value)}
-          />
-          <button type="submit">Add Task</button>
-        </form>
+        <div id="addTaskForm">
+          <Form onSubmit={addTask} style={{ display: "flex" }}>
+            <Form.Control
+              type="text"
+              className="taskInput"
+              placeholder="Enter task"
+              required
+              value={taskTitle}
+              onChange={(e) => setTaskTitle(e.target.value)}
+              style={{ width: "40vw", marginRight: "10px" }}
+            />
+            <Button type="submit">Add Task</Button>
+          </Form>
+        </div>
         <div id="total-tasks">
           Total tasks: <span id="task-counter">{tasks.length}</span>
         </div>
-        {tasks?.map((task) => (
-          <TaskList
-            task={task}
-            key={task.id}
-            editTask={editTask}
-            deleteTask={deleteTask}
-          />
-        ))}
+        <ListGroup style={{ overflowY: "scroll", height: "69vh" }}>
+          {tasks?.map((task) => (
+            <ListGroup.Item>
+              <TaskList
+                task={task}
+                key={task.id}
+                editTask={editTask}
+                deleteTask={deleteTask}
+              />
+            </ListGroup.Item>
+          ))}
+        </ListGroup>
       </div>
     </div>
   );
